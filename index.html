@@ -101,6 +101,9 @@ label{font-size:12px;color:var(--mut)}
 <div class="row"><label style="flex:1">Backup automatico ad ogni modifica <input type="checkbox" id="autoS" onchange="setAuto()" style="vertical-align:-2px"></label></div></div>
 
 <script>
+const CFG='inflowCfg';
+let cfg=(()=>{try{return JSON.parse(localStorage.getItem(CFG))||{accs:[],act:0,auto:false,last:null}}catch(e){return{accs:[],act:0,auto:false,last:null}}})();
+function sCfg(){try{localStorage.setItem(CFG,JSON.stringify(cfg))}catch(e){}}
 const LS='pagDBv2',MN=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const today=new Date(),TN=today.getFullYear()*100+today.getMonth()+1;
 const MODES=[['☰ Lista','list'],['▦ Griglia','grid'],['◱ Trimestri','quar']];
@@ -233,9 +236,6 @@ function cDelete(){if(!confirm('Elimino cliente e tutti i suoi dati?'))return;
 DB.clients=DB.clients.filter(c=>c.id!=editId);delete DB.ent[editId];view='all';save();hide(cSheet);render()}
 function cycleMode(){mode=(mode+1)%MODES.length;try{localStorage.setItem(LS+'m2',MODES[mode][1])}catch(e){}render()}
 // ---- backup GitHub (gist privati, multi-account)
-const CFG='inflowCfg';
-let cfg=(()=>{try{return JSON.parse(localStorage.getItem(CFG))||{accs:[],act:0,auto:false,last:null}}catch(e){return{accs:[],act:0,auto:false,last:null}}})();
-function sCfg(){try{localStorage.setItem(CFG,JSON.stringify(cfg))}catch(e){}}
 function acc(){return cfg.accs[cfg.act]}
 function drawAccs(){
 accs.innerHTML=cfg.accs.length?cfg.accs.map((a,i)=>'<div class="acc'+(i==cfg.act?' on':'')+'"><div><b>'+a.name+'</b><span>'+(a.gist?'gist '+a.gist.slice(0,8):'nessun backup ancora')+'</span></div><div class="aa">'+(i==cfg.act?'':'<button onclick="useAcc('+i+')">Usa</button>')+'<button onclick="delAcc('+i+')">🗑</button></div></div>').join(''):'<div class="resid">Nessun account collegato</div>';

@@ -1,0 +1,271 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Inflow"><meta name="theme-color" content="#0b0f14">
+<title>Inflow</title>
+<link rel="manifest" href="manifest.json">
+<style>:root{--bg:#0b0f14;--card:#151b23;--txt:#e8eef4;--mut:#8fa1b3;--g:#2ecc71;--o:#f39c12;--r:#e74c3c;--b:#3aa0ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:12px 12px 50px;-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+header{display:flex;align-items:center;gap:6px;font-size:19px;margin:6px 0 10px}
+.ib{background:var(--card);border:0;border-radius:10px;padding:8px 10px;font-size:14px;color:var(--txt);cursor:pointer}
+header .ib:first-of-type{margin-left:auto}
+.alert{display:flex;align-items:center;gap:10px;background:#2b1516;border:1px solid var(--r);border-radius:14px;padding:10px 12px;margin:0 0 10px;cursor:pointer}
+.alert b{font-size:15px;color:var(--r)}.alert i{font-style:normal;display:block;font-size:11px;color:var(--mut)}
+.alert .go{margin-left:auto;font-size:12px;color:var(--r);font-weight:600}
+.alert.ok{background:#12291c;border-color:var(--g);cursor:default}.alert.ok b{color:var(--g)}.alert.ok .go{display:none}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;white-space:nowrap}
+.chip{background:var(--card);border:2px solid transparent;border-radius:20px;padding:8px 14px;color:var(--txt);font-size:13px;font-weight:600;cursor:pointer}
+.chip.on{border-color:var(--b)}.chip.add{color:var(--g)}
+.chips.f .chip.on{border-color:var(--o)}
+.tot{display:flex;gap:8px;margin:6px 0 12px}.tot div{flex:1;background:var(--card);border-radius:14px;padding:10px;text-align:center}
+.tot b{display:block;font-size:15px;font-variant-numeric:tabular-nums}.tot span{font-size:9px;color:var(--mut)}
+.cat{font-size:14px;font-weight:700;margin:14px 4px 4px;color:var(--b)}.year{font-size:13px;color:var(--mut);margin:10px 4px 4px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.m{border-radius:12px;padding:8px 4px;text-align:center;background:var(--card);border:2px solid transparent;font-size:13px;cursor:pointer}
+.m small{display:block;color:var(--mut);font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.m em{display:block;font-style:normal;font-size:9px;letter-spacing:.02em;margin-top:2px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.m.pag{border-color:var(--g);background:#12291c}.m.pag em{color:var(--g)}
+.m.par{border-color:var(--o);background:#2b2113}.m.par em{color:var(--o)}
+.m.sca{border-color:var(--r);background:#2b1516}.m.sca em{color:var(--r)}
+.m.fut{opacity:.55}.m.fut em{color:var(--mut)}
+.m.hold{transform:scale(.94);transition:transform .4s}
+.r{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:12px;padding:10px;margin-bottom:6px;border-left:4px solid #2a3644;cursor:pointer}
+.r.pag{border-left-color:var(--g)}.r.par{border-left-color:var(--o)}.r.sca{border-left-color:var(--r)}.r.fut{opacity:.55}
+.r.hold{transform:scale(.98);transition:transform .4s}
+.r b{font-size:13px}.r i{font-style:normal;font-size:11px;color:var(--mut);display:block}
+.r .amt{margin-left:auto;text-align:right;font-size:14px;font-variant-numeric:tabular-nums}
+.r .amt i{font-size:10px}
+.q{background:var(--card);border-radius:14px;padding:12px;margin-bottom:8px}
+.q h3{margin:0 0 8px;font-size:14px;display:flex}.q h3 span{margin-left:auto;color:var(--mut);font-size:11px;font-weight:400}
+.qb{display:flex;gap:6px}.qb div{flex:1;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
+.qb small{display:block;font-size:9px;color:var(--mut)}
+.qm{display:flex;gap:6px;margin-top:8px}.qm b{flex:1;text-align:center;font-size:11px;font-weight:600;border-radius:8px;padding:4px 0;background:#0e141b;color:var(--mut);cursor:pointer}
+.qm b.pag{color:var(--g)}.qm b.par{color:var(--o)}.qm b.sca{color:var(--r)}
+.empty{text-align:center;color:var(--mut);font-size:13px;padding:30px 10px}
+.sheet{position:fixed;inset:auto 0 0 0;background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(30px + env(safe-area-inset-bottom));transform:translateY(115%);transition:.25s;box-shadow:0 -8px 30px #0008;max-height:85vh;overflow-y:auto}
+.sheet.on{transform:none}.row{display:flex;gap:8px;align-items:center;margin:10px 0}
+input,select,textarea{background:#0e141b;color:var(--txt);border:1px solid #2a3644;border-radius:10px;padding:10px;font-size:16px;font-family:inherit}
+input[type=number]{width:110px}textarea{width:100%;min-height:70px}
+button{border:0;border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer}
+.bg{background:var(--g);color:#06240f;flex:1}.bo{background:var(--o);color:#2b1a02;flex:1}.bn{background:#2a3644;color:var(--txt);flex:1}
+.bd{background:#3a1518;color:var(--r);flex:1}
+.x{position:absolute;top:10px;right:14px;background:none;color:var(--mut);font-size:20px;padding:4px}
+label{font-size:12px;color:var(--mut)}
+.pay{display:flex;align-items:center;gap:8px;background:#0e141b;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:13px;font-variant-numeric:tabular-nums}
+.pay b{color:var(--g)}.pay span{color:var(--mut);font-size:11px}
+.pay button{margin-left:auto;background:none;color:var(--mut);padding:2px 6px;font-size:15px}
+.resid{font-size:12px;color:var(--mut);margin:2px 0 8px}
+.acc{display:flex;align-items:center;gap:8px;background:#0e141b;border-radius:10px;padding:10px;margin-bottom:6px;font-size:13px;border:2px solid transparent}
+.acc.on{border-color:var(--g)}
+.acc b{display:block}.acc span{font-size:11px;color:var(--mut)}
+.acc .aa{margin-left:auto;display:flex;gap:4px}
+.acc button{background:#2a3644;color:var(--txt);padding:6px 9px;font-size:13px}
+.warn{font-size:11px;color:var(--o);background:#2b2113;border-radius:10px;padding:8px 10px;margin:8px 0;line-height:1.4}
+.sync{font-size:11px;color:var(--mut);margin:4px 0 8px}</style></head>
+<body>
+<header>💰 <b>Inflow</b><button class="ib" id="vb" onclick="cycleMode()">☰ Lista</button><button class="ib" onclick="show(bSheet)">📋</button></header>
+<div id="bar"></div>
+<div class="chips" id="chips"></div><div class="chips f" id="fchips"></div><div class="tot" id="tot"></div><div id="list"></div>
+
+<div class="sheet" id="mSheet"><button class="x" onclick="hide(mSheet)">✕</button>
+<h2 id="mTitle" style="margin:0;font-size:17px"></h2>
+<div class="row">Dovuto: <input type="number" id="mA" step="0.01" oninput="mLive()"> €</div>
+<div class="resid" id="mRes"></div>
+<label>Acconti incassati</label><div id="mPays"></div>
+<div class="row"><input type="date" id="pD" style="flex:1"><input type="number" id="pA" step="0.01" placeholder="€"><button class="bg" style="flex:0 0 auto;padding:10px 14px" onclick="addPay()">＋</button></div>
+<div class="row"><button class="bg" onclick="payFull(cur.cid,cur.y,cur.m);openMonth(cur.cid,cur.y,cur.m)">✅ Salda tutto</button><button class="bn" onclick="clearPays()">↩ Azzera</button></div>
+<label>📝 Nota del mese</label><textarea id="mNote" oninput="mLive()" placeholder="es. bonifico ricevuto, saldo trimestrale..."></textarea></div>
+
+<div class="sheet" id="cSheet"><button class="x" onclick="hide(cSheet)">✕</button>
+<h2 id="cTitle" style="margin:0;font-size:17px">Cliente</h2>
+<div class="row">Nome <input id="cName" style="flex:1" placeholder="es. ROSSI SRL"></div>
+<div class="row">Emoji <input id="cEmoji" style="width:70px" value="💼"> Importo/mese <input type="number" id="cDef" step="0.01" value="100"> €</div>
+<div class="row">Inizio: <select id="cSm"></select> <input type="number" id="cSy" value="2026" style="width:90px"></div>
+<div class="row"><button class="bg" onclick="cSave()">💾 Salva</button><button class="bd" id="cDel" onclick="cDelete()">🗑 Elimina</button></div></div>
+
+<div class="sheet" id="bSheet"><button class="x" onclick="hide(bSheet)">✕</button>
+<h2 style="margin:0;font-size:17px">💾 Database & Backup</h2>
+<div class="row"><button class="bn" onclick="copyB()">📋 Copia backup</button></div>
+<label>Incolla qui un backup per ripristinarlo:</label><textarea id="bIn" placeholder='{"clients":...}'></textarea>
+<div class="row"><button class="bg" onclick="imp()">♻️ Importa</button></div>
+<h2 style="margin:18px 0 0;font-size:17px">☁️ Backup su GitHub</h2>
+<div class="sync" id="syncSt"></div>
+<div id="accs"></div>
+<div class="row"><input id="aName" placeholder="nome account" style="flex:1"></div>
+<div class="row"><input id="aTok" type="password" placeholder="github_pat_..." style="flex:1"><button class="bg" style="flex:0 0 auto;padding:10px 14px" onclick="addAcc()">＋</button></div>
+<div class="warn">Il token resta salvato in chiaro su questo dispositivo. Usa un token fine-grained con il solo permesso <b>Gists: read and write</b>, così non può toccare i tuoi repository. Revocalo da GitHub se perdi il telefono.</div>
+<div class="row"><button class="bg" onclick="push()">⬆️ Salva su GitHub</button><button class="bn" onclick="pull()">⬇️ Scarica da GitHub</button></div>
+<div class="row"><label style="flex:1">Backup automatico ad ogni modifica <input type="checkbox" id="autoS" onchange="setAuto()" style="vertical-align:-2px"></label></div></div>
+
+<script>
+const LS='pagDBv2',MN=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const today=new Date(),TN=today.getFullYear()*100+today.getMonth()+1;
+const MODES=[['☰ Lista','list'],['▦ Griglia','grid'],['◱ Trimestri','quar']];
+const FILT=[['Tutti','all'],['⚠️ Scaduti','sca'],['◐ Parziali','par'],['✅ Pagati','pag']];
+let mode=0,filt='all',cur=null,view='all',editId=null;
+let DB=(()=>{try{return JSON.parse(localStorage.getItem(LS)||'null')}catch(e){return null}})();
+function iso(d){return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
+const TODAY=iso(today);
+function seed(){const D={clients:[{id:'server',name:'SERVER',emoji:'🖥️',def:250,sy:2025,sm:6},{id:'grafiche',name:'GRAFICHE',emoji:'🎨',def:150,sy:2025,sm:7}],ent:{server:{},grafiche:{}}};
+for(let k=0;k<=12;k++){const d=new Date(2025,5+k,1);D.ent.server[d.getFullYear()+'-'+(d.getMonth()+1)]={a:250,st:'pag',note:''}}
+D.ent.server['2026-6'].note='Fino a giugno PAGATO';D.ent.server['2026-1'].note='Saldo 3.250€ + prest. 812,50€ = 4.062,50€';
+D.ent.server['2027-1']={a:250,st:'da',note:'Saldo anno 3.000€ + prest. 750€ = 3.750€'};
+Object.assign(D.ent.grafiche,{'2025-7':{a:150,st:'pag'},'2025-8':{a:150,st:'pag'},'2025-9':{a:150,st:'pag',note:'SALDATI 450€'},'2025-10':{a:250,st:'pag'},'2025-11':{a:200,st:'pag'},'2025-12':{a:250,st:'pag',note:'SALDATI 700€'},'2026-1':{a:150,st:'pag'},'2026-2':{a:150,st:'pag'},'2026-3':{a:200,st:'pag',note:'SALDATI 450€'},'2026-4':{a:400,st:'par',p:200},'2026-5':{a:400,st:'par',p:200},'2026-6':{a:400,st:'par',p:200,note:'Incassati fin ora 600€'}});
+return D}
+// migrazione da {st,p,d} a lista acconti
+function migrate(D){for(const cid in D.ent)for(const k in D.ent[cid]){const e=D.ent[cid][k];
+if(e.pays)continue;const[y,m]=k.split('-').map(Number);
+const when=e.d||iso(new Date(y,m-1,28));
+e.pays=e.st=='pag'?[{d:when,a:e.a}]:e.st=='par'&&e.p>0?[{d:when,a:e.p}]:[];
+delete e.st;delete e.p;delete e.d}return D}
+if(!DB)DB=seed();
+DB=migrate(DB);save();
+function save(){try{localStorage.setItem(LS,JSON.stringify(DB))}catch(e){}if(typeof autoPush=='function')autoPush()}
+function client(id){return DB.clients.find(c=>c.id==id)}
+function ent(cid,y,m){const e=(DB.ent[cid]||{})[y+'-'+m];return e||{a:client(cid).def,note:'',pays:[]}}
+function setEnt(cid,y,m,v){(DB.ent[cid]=DB.ent[cid]||{})[y+'-'+m]=v;save()}
+function paid(e){return (e.pays||[]).reduce((s,p)=>s+(+p.a||0),0)}
+function stat(e,kk){const p=paid(e);return p>=e.a&&e.a>0?'pag':p>0?'par':kk<=TN?'sca':'fut'}
+function lastPay(e){return (e.pays||[]).map(p=>p.d).filter(Boolean).sort().pop()}
+function fmt(n){return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
+function fmt0(n){return (n%1?fmt(n):n.toLocaleString('it-IT')+' €')}
+function dmy(s){const[y,m,d]=s.split('-');return d+'/'+m+'/'+y.slice(2)}
+function show(el){el.classList.add('on')}function hide(el){el.classList.remove('on')}
+function months(cid){const c=client(cid),out=[];
+for(let y=c.sy;y<=today.getFullYear()+1;y++)for(let m=1;m<=12;m++){if(y==c.sy&&m<c.sm)continue;out.push([y,m])}return out}
+function rows(ids){const out=[];
+for(const cid of ids)for(const[y,m]of months(cid)){const e=ent(cid,y,m),kk=y*100+m,st=stat(e,kk);
+if(filt!='all'&&!(filt==st||(filt=='sca'&&st=='sca')))continue;
+out.push({cid,y,m,e,kk,st,paid:paid(e)})}
+return out.sort((a,b)=>a.kk-b.kk||a.cid.localeCompare(b.cid))}
+function totals(ids){let out=0,inc=0,prog=0;
+for(const cid of ids)for(const[y,m]of months(cid)){const e=ent(cid,y,m),p=paid(e),res=Math.max(0,e.a-p),kk=y*100+m;
+inc+=p;kk<=TN?out+=res:prog+=res}
+return{out,inc,prog}}
+function overdue(ids){let n=0,s=0,old=null;
+for(const cid of ids)for(const[y,m]of months(cid)){const kk=y*100+m;if(kk>TN)continue;
+const e=ent(cid,y,m),res=e.a-paid(e);if(res<=0)continue;n++;s+=res;const d=new Date(y,m-1,1);if(!old||d<old)old=d}
+return{n,s,days:old?Math.floor((today-old)/864e5):0}}
+function render(){
+let h='<button class="chip'+(view=='all'?' on':'')+'" onclick="view=\'all\';render()">📊 Tutti</button>';
+for(const c of DB.clients)h+='<button class="chip'+(view==c.id?' on':'')+'" onclick="view=\''+c.id+'\';render()">'+c.emoji+' '+c.name+'</button>';
+h+='<button class="chip add" onclick="openClient(null)">＋</button>';chips.innerHTML=h;
+fchips.innerHTML=FILT.map(f=>'<button class="chip'+(filt==f[1]?' on':'')+'" onclick="filt=\''+f[1]+'\';render()">'+f[0]+'</button>').join('');
+const ids=view=='all'?DB.clients.map(c=>c.id):[view],t=totals(ids),o=overdue(ids);
+bar.innerHTML=o.n?'<div class="alert" onclick="filt=\'sca\';render()"><div><b>'+o.n+' '+(o.n==1?'mese scaduto':'mesi scaduti')+' · '+fmt0(o.s)+'</b><i>il più vecchio da '+o.days+' giorni</i></div><div class="go">Vedi →</div></div>'
+:'<div class="alert ok"><div><b>Tutto incassato</b><i>nessuno scaduto ad oggi</i></div></div>';
+tot.innerHTML='<div><b>'+fmt(t.out)+'</b><span>SCADUTO DA INCASSARE</span></div><div><b>'+fmt(t.inc)+'</b><span>INCASSATO</span></div><div><b>'+fmt(t.prog)+'</b><span>PROGRAMMATO</span></div>';
+vb.textContent=MODES[mode][0];
+const M=MODES[mode][1],R=rows(ids);
+list.innerHTML=!R.length?'<div class="empty">Nessun mese con questo filtro</div>':M=='list'?renderList(R,ids):M=='quar'?renderQuar(R,ids):renderGrid(R,ids)}
+const LBL={pag:'PAGATO',par:'PARZIALE',sca:'SCADUTO',fut:'DA PAGARE'};
+function hold(r){return ' onpointerdown="pStart(event,\''+r.cid+'\','+r.y+','+r.m+')" onpointerup="pEnd(event)" onpointercancel="pEnd(event)" onpointerleave="pEnd(event)" oncontextmenu="return false" onclick="pClick(\''+r.cid+'\','+r.y+','+r.m+')"'}
+function renderGrid(R,ids){let L='';
+for(const cid of ids){const c=client(cid),mine=R.filter(r=>r.cid==cid);if(!mine.length)continue;
+if(ids.length>1)L+='<div class="cat">'+c.emoji+' '+c.name+' · '+fmt0(c.def)+'/mese</div>';
+let cy=0,open=false;
+for(const r of mine){if(r.y!=cy){if(open)L+='</div>';cy=r.y;L+='<div class="year">📅 '+cy+'</div><div class="grid">';open=true}
+const w=lastPay(r.e),np=(r.e.pays||[]).length;
+const sm=r.st=='par'?fmt0(r.paid)+' / '+fmt0(r.e.a):fmt0(r.st=='pag'?r.paid:r.e.a);
+const lb=r.st=='pag'?(w?'✅ '+dmy(w):LBL.pag)+(np>1?' ×'+np:''):r.st=='par'?(w?'◐ '+dmy(w):LBL.par)+(np>1?' ×'+np:''):LBL[r.st];
+L+='<div class="m '+r.st+'"'+hold(r)+'>'+MN[r.m-1]+'<small>'+sm+(r.e.note?' 📝':'')+'</small><em>'+lb+'</em></div>'}
+if(open)L+='</div>'}
+return L}
+function renderList(R,ids){let L='',cy=0;
+for(const r of R){const c=client(r.cid),when=lastPay(r.e);
+if(r.y!=cy){cy=r.y;L+='<div class="year">📅 '+cy+'</div>'}
+const np=(r.e.pays||[]).length;
+const st=r.st=='pag'?'✅ '+fmt0(r.paid)+(when?' · '+dmy(when):'')+(np>1?' ('+np+' acconti)':'')
+:r.st=='par'?'◐ '+fmt0(r.paid)+' su '+fmt0(r.e.a)+(when?' · ult. '+dmy(when):'')
+:r.st=='sca'?'⚠️ Scaduto':'· Programmato';
+const right=r.st=='pag'?'<span style="color:var(--g)">'+fmt0(r.e.a)+'</span>'
+:r.st=='par'?'<span style="color:var(--o)">'+fmt0(r.e.a-r.paid)+'</span>'
+:r.st=='sca'?'<span style="color:var(--r)">'+fmt0(r.e.a)+'</span>':fmt0(r.e.a);
+L+='<div class="r '+r.st+'"'+hold(r)+'><div><b>'+MN[r.m-1]+' '+r.y+'</b><i>'+c.emoji+' '+c.name+(r.e.note?' 📝':'')+'</i></div><div class="amt">'+right+'<i>'+st+'</i></div></div>'}
+return L}
+function renderQuar(R,ids){const Q={};
+for(const r of R){const q=r.y+'-'+Math.ceil(r.m/3),o=Q[q]=Q[q]||{tot:0,inc:0,ms:[]};
+o.tot+=r.e.a;o.inc+=r.paid;o.ms.push(r)}
+let L='',cy=0;
+for(const q of Object.keys(Q).sort((a,b)=>{const[ay,aq]=a.split('-').map(Number),[by,bq]=b.split('-').map(Number);return ay-by||aq-bq})){
+const[y,n]=q.split('-').map(Number),o=Q[q];
+if(y!=cy){cy=y;L+='<div class="year">📅 '+cy+'</div>'}
+const res=o.tot-o.inc;
+L+='<div class="q"><h3>Q'+n+' '+y+'<span>'+MN[(n-1)*3]+'–'+MN[n*3-1]+'</span></h3>'+
+'<div class="qb"><div>'+fmt0(o.tot)+'<small>DOVUTO</small></div><div style="color:var(--g)">'+fmt0(o.inc)+'<small>INCASSATO</small></div><div style="color:'+(res>0?'var(--r)':'var(--mut)')+'">'+fmt0(res)+'<small>RESIDUO</small></div></div><div class="qm">'+
+o.ms.map(r=>'<b class="'+r.st+'"'+hold(r)+'>'+MN[r.m-1]+(ids.length>1?' '+client(r.cid).emoji:'')+'</b>').join('')+'</div></div>'}
+return L}
+// tap = apri, tap lungo = salda
+let hT=null,hFired=false,hEl=null;
+function pStart(ev,cid,y,m){hFired=false;hEl=ev.currentTarget;hEl.classList.add('hold');
+hT=setTimeout(()=>{hFired=true;hEl&&hEl.classList.remove('hold');payFull(cid,y,m);
+if(navigator.vibrate)navigator.vibrate(30);render()},500)}
+function pEnd(){clearTimeout(hT);hEl&&hEl.classList.remove('hold');hEl=null}
+function pClick(cid,y,m){if(hFired){hFired=false;return}openMonth(cid,y,m)}
+function payFull(cid,y,m){const e=ent(cid,y,m),res=e.a-paid(e);if(res<=0)return;
+e.pays=(e.pays||[]).concat({d:TODAY,a:+res.toFixed(2)});setEnt(cid,y,m,e)}
+function openMonth(cid,y,m){cur={cid,y,m};const e=ent(cid,y,m),c=client(cid);
+mTitle.textContent=c.emoji+' '+c.name+' – '+MN[m-1]+' '+y;mA.value=e.a;mNote.value=e.note||'';
+drawPays();show(mSheet)}
+function drawPays(){const e=ent(cur.cid,cur.y,cur.m),p=paid(e),res=e.a-p;
+mPays.innerHTML=(e.pays||[]).length?e.pays.map((x,i)=>'<div class="pay"><b>'+fmt0(+x.a||0)+'</b><span>'+(x.d?dmy(x.d):'senza data')+'</span><button onclick="delPay('+i+')">🗑</button></div>').join(''):'<div class="resid">Nessun acconto registrato</div>';
+mRes.innerHTML=res>0?'Incassato '+fmt0(p)+' · <b style="color:var(--r)">residuo '+fmt0(res)+'</b>':'<b style="color:var(--g)">Saldato'+(p>e.a?' (+'+fmt0(p-e.a)+')':'')+'</b>';
+pD.value=TODAY;pA.value=res>0?(+res.toFixed(2)):''}
+function addPay(){const a=+pA.value;if(!a)return;const e=ent(cur.cid,cur.y,cur.m);
+e.pays=(e.pays||[]).concat({d:pD.value||TODAY,a});setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
+function delPay(i){const e=ent(cur.cid,cur.y,cur.m);e.pays.splice(i,1);setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
+function clearPays(){const e=ent(cur.cid,cur.y,cur.m);e.pays=[];setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
+function mLive(){if(!cur)return;const e=ent(cur.cid,cur.y,cur.m);e.a=+mA.value||0;e.note=mNote.value;
+setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
+function openClient(id){editId=id;const c=id?client(id):null;cTitle.textContent=c?'Modifica '+c.name:'Nuovo cliente';
+cName.value=c?c.name:'';cEmoji.value=c?c.emoji:'💼';cDef.value=c?c.def:100;cSy.value=c?c.sy:today.getFullYear();
+cSm.innerHTML=MN.map((n,i)=>'<option value="'+(i+1)+'">'+n+'</option>').join('');
+if(c)cSm.value=c.sm;else cSm.value=today.getMonth()+1;
+cDel.style.display=c?'block':'none';show(cSheet)}
+function cSave(){const name=cName.value.trim()||'Cliente';
+if(editId){const c=client(editId);c.name=name;c.emoji=cEmoji.value||'💼';c.def=+cDef.value||0;c.sy=+cSy.value;c.sm=+cSm.value}
+else{const id='c'+Date.now();DB.clients.push({id,name,emoji:cEmoji.value||'💼',def:+cDef.value||0,sy:+cSy.value,sm:+cSm.value});DB.ent[id]={};view=id}
+save();hide(cSheet);render()}
+function cDelete(){if(!confirm('Elimino cliente e tutti i suoi dati?'))return;
+DB.clients=DB.clients.filter(c=>c.id!=editId);delete DB.ent[editId];view='all';save();hide(cSheet);render()}
+function cycleMode(){mode=(mode+1)%MODES.length;try{localStorage.setItem(LS+'m2',MODES[mode][1])}catch(e){}render()}
+// ---- backup GitHub (gist privati, multi-account)
+const CFG='inflowCfg';
+let cfg=(()=>{try{return JSON.parse(localStorage.getItem(CFG))||{accs:[],act:0,auto:false,last:null}}catch(e){return{accs:[],act:0,auto:false,last:null}}})();
+function sCfg(){try{localStorage.setItem(CFG,JSON.stringify(cfg))}catch(e){}}
+function acc(){return cfg.accs[cfg.act]}
+function drawAccs(){
+accs.innerHTML=cfg.accs.length?cfg.accs.map((a,i)=>'<div class="acc'+(i==cfg.act?' on':'')+'"><div><b>'+a.name+'</b><span>'+(a.gist?'gist '+a.gist.slice(0,8):'nessun backup ancora')+'</span></div><div class="aa">'+(i==cfg.act?'':'<button onclick="useAcc('+i+')">Usa</button>')+'<button onclick="delAcc('+i+')">🗑</button></div></div>').join(''):'<div class="resid">Nessun account collegato</div>';
+autoS.checked=!!cfg.auto;
+syncSt.textContent=cfg.last?'Ultimo backup: '+new Date(cfg.last).toLocaleString('it-IT'):'Mai eseguito';}
+function addAcc(){const name=aName.value.trim(),token=aTok.value.trim();
+if(!name||!token)return window.alert('Servono nome e token');
+cfg.accs.push({name,token,gist:''});cfg.act=cfg.accs.length-1;sCfg();aName.value=aTok.value='';drawAccs()}
+function useAcc(i){cfg.act=i;sCfg();drawAccs()}
+function delAcc(i){if(!confirm('Scollego '+cfg.accs[i].name+'? Il gist su GitHub resta, va cancellato da lì.'))return;
+cfg.accs.splice(i,1);if(cfg.act>=cfg.accs.length)cfg.act=Math.max(0,cfg.accs.length-1);sCfg();drawAccs()}
+function setAuto(){cfg.auto=autoS.checked;sCfg()}
+function gh(url,opt){const a=acc();return fetch('https://api.github.com'+url,Object.assign({headers:{Authorization:'Bearer '+a.token,Accept:'application/vnd.github+json'}},opt||{}))
+.then(r=>r.ok?r.json():r.json().then(j=>{throw new Error(r.status+' '+(j.message||''))}))}
+function push(sil){const a=acc();if(!a)return sil||window.alert('Collega prima un account');
+const body=JSON.stringify({description:'Inflow backup',public:false,files:{'inflow.json':{content:JSON.stringify(DB,null,1)}}});
+const req=a.gist?gh('/gists/'+a.gist,{method:'PATCH',body}):gh('/gists',{method:'POST',body:JSON.stringify({description:'Inflow backup',public:false,files:{'inflow.json':{content:JSON.stringify(DB,null,1)}}})});
+return req.then(j=>{a.gist=j.id;cfg.last=Date.now();sCfg();drawAccs();if(!sil)window.alert('Salvato su GitHub ✅')})
+.catch(e=>{if(!sil)window.alert('Errore GitHub: '+e.message+'\n\nControlla il token (permesso Gists: read and write) o la connessione.')})}
+function pull(){const a=acc();if(!a)return window.alert('Collega prima un account');
+if(!a.gist)return window.alert('Questo account non ha ancora un backup');
+if(!confirm('Sostituisco i dati locali con quelli su GitHub?'))return;
+gh('/gists/'+a.gist).then(j=>{const c=j.files['inflow.json'].content,d=JSON.parse(c);
+if(!d.clients||!d.ent)throw new Error('file non valido');DB=migrate(d);save();render();drawAccs();window.alert('Ripristinato da GitHub ✅')})
+.catch(e=>window.alert('Errore GitHub: '+e.message))}
+let aT=null;
+function autoPush(){if(!cfg.auto||!acc())return;clearTimeout(aT);aT=setTimeout(()=>push(true),3000)}
+function copyB(){navigator.clipboard.writeText(JSON.stringify(DB));window.alert('Backup copiato ✅')}
+function dl(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:'application/json'}));a.download='backup-inflow.json';a.click()}
+function imp(){try{const d=JSON.parse(bIn.value);if(!d.clients||!d.ent)throw 0;DB=migrate(d);save();hide(bSheet);render();window.alert('Ripristinato ✅')}catch(e){window.alert('Backup non valido ❌')}}
+try{const k=MODES.findIndex(m=>m[1]==localStorage.getItem(LS+'m2'));if(k>=0)mode=k}catch(e){}
+render();drawAccs();
+if('serviceWorker' in navigator&&location.protocol=='https:')navigator.serviceWorker.register('sw.js');</script></body></html>

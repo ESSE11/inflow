@@ -128,7 +128,7 @@ function client(id){return DB.clients.find(c=>c.id==id)}
 function ent(cid,y,m){const e=(DB.ent[cid]||{})[y+'-'+m];return e||{a:client(cid).def,note:'',pays:[]}}
 function setEnt(cid,y,m,v){(DB.ent[cid]=DB.ent[cid]||{})[y+'-'+m]=v;save()}
 function paid(e){return (e.pays||[]).reduce((s,p)=>s+(+p.a||0),0)}
-function stat(e,kk){const p=paid(e);return p>=e.a&&e.a>0?'pag':p>0?'par':kk<=TN?'sca':'fut'}
+function stat(e,kk){const p=paid(e);if(e.a<=0)return'pag';return p>=e.a?'pag':p>0?'par':kk<=TN?'sca':'fut'}
 function lastPay(e){return (e.pays||[]).map(p=>p.d).filter(Boolean).sort().pop()}
 function fmt(n){return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'}
 function fmt0(n){return (n%1?fmt(n):n.toLocaleString('it-IT')+' €')}

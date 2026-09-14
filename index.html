@@ -88,6 +88,8 @@ label{font-size:12px;color:var(--mut)}
 
 <div class="sheet" id="bSheet"><button class="x" onclick="hide(bSheet)">✕</button>
 <h2 style="margin:0;font-size:17px">💾 Database & Backup</h2>
+<div id="checkOut"></div>
+<div class="row"><button class="bn" onclick="show(bSheet);checkData(true)">🔍 Verifica conti</button></div>
 <div class="row"><button class="bn" onclick="copyB()">📋 Copia backup</button></div>
 <label>Incolla qui un backup per ripristinarlo:</label><textarea id="bIn" placeholder='{"clients":...}'></textarea>
 <div class="row"><button class="bg" onclick="imp()">♻️ Importa</button></div>
@@ -152,14 +154,24 @@ function overdue(ids){let n=0,s=0,old=null;
 for(const cid of ids)for(const[y,m]of months(cid)){const kk=y*100+m;if(kk>TN)continue;
 const e=ent(cid,y,m),res=e.a-paid(e);if(res<=0)continue;n++;s+=res;const d=new Date(y,m-1,1);if(!old||d<old)old=d}
 return{n,s,days:old?Math.floor((today-old)/864e5):0}}
+function checkData(fill){const probs=[];
+for(const c of DB.clients){const ent=DB.ent[c.id]||{};
+for(const k in ent){const e=ent[k];
+if(e.a<0)probs.push(c.name+' '+k+': importo dovuto negativo ('+fmt0(e.a)+')');
+for(const p of e.pays||[])if(!(p.a>0))probs.push(c.name+' '+k+': acconto non valido ('+fmt0(p.a||0)+')');
+const p=paid(e);if(e.a>0&&p>e.a*2)probs.push(c.name+' '+k+': incassato '+fmt0(p)+' contro dovuto '+fmt0(e.a)+' (verifica)')}}
+if(fill)checkOut.innerHTML=probs.length?'<div class="warn">⚠️ '+probs.length+' anomalie:<br>'+probs.join('<br>')+'</div>':'<div class="sync">✅ Nessuna anomalia trovata</div>';
+return probs}
 function render(){
 let h='<button class="chip'+(view=='all'?' on':'')+'" onclick="view=\'all\';render()">📊 Tutti</button>';
 for(const c of DB.clients)h+='<button class="chip'+(view==c.id?' on':'')+'" onclick="view=\''+c.id+'\';render()">'+c.emoji+' '+c.name+'</button>';
 h+='<button class="chip add" onclick="openClient(null)">＋</button>';chips.innerHTML=h;
 fchips.innerHTML=FILT.map(f=>'<button class="chip'+(filt==f[1]?' on':'')+'" onclick="filt=\''+f[1]+'\';render()">'+f[0]+'</button>').join('');
 const ids=view=='all'?DB.clients.map(c=>c.id):[view],t=totals(ids),o=overdue(ids);
-bar.innerHTML=o.n?'<div class="alert" onclick="filt=\'sca\';render()"><div><b>'+o.n+' '+(o.n==1?'mese scaduto':'mesi scaduti')+' · '+fmt0(o.s)+'</b><i>il più vecchio da '+o.days+' giorni</i></div><div class="go">Vedi →</div></div>'
-:'<div class="alert ok"><div><b>Tutto incassato</b><i>nessuno scaduto ad oggi</i></div></div>';
+const probs=checkData();
+bar.innerHTML=(probs.length?'<div class="alert" onclick="show(bSheet);checkData(true)"><div><b>'+probs.length+' anomalie nei conti</b><i>tocca per i dettagli</i></div><div class="go">Vedi →</div></div>':'')
++(o.n?'<div class="alert" onclick="filt=\'sca\';render()"><div><b>'+o.n+' '+(o.n==1?'mese scaduto':'mesi scaduti')+' · '+fmt0(o.s)+'</b><i>il più vecchio da '+o.days+' giorni</i></div><div class="go">Vedi →</div></div>'
+:'<div class="alert ok"><div><b>Tutto incassato</b><i>nessuno scaduto ad oggi</i></div></div>');
 tot.innerHTML='<div><b>'+fmt(t.out)+'</b><span>SCADUTO DA INCASSARE</span></div><div><b>'+fmt(t.inc)+'</b><span>INCASSATO</span></div><div><b>'+fmt(t.prog)+'</b><span>PROGRAMMATO</span></div>';
 vb.textContent=MODES[mode][0];
 const M=MODES[mode][1],R=rows(ids);
@@ -217,11 +229,13 @@ function drawPays(){const e=ent(cur.cid,cur.y,cur.m),p=paid(e),res=e.a-p;
 mPays.innerHTML=(e.pays||[]).length?e.pays.map((x,i)=>'<div class="pay"><b>'+fmt0(+x.a||0)+'</b><span>'+(x.d?dmy(x.d):'senza data')+'</span><button onclick="delPay('+i+')">🗑</button></div>').join(''):'<div class="resid">Nessun acconto registrato</div>';
 mRes.innerHTML=res>0?'Incassato '+fmt0(p)+' · <b style="color:var(--r)">residuo '+fmt0(res)+'</b>':'<b style="color:var(--g)">Saldato'+(p>e.a?' (+'+fmt0(p-e.a)+')':'')+'</b>';
 pD.value=TODAY;pA.value=res>0?(+res.toFixed(2)):''}
-function addPay(){const a=+pA.value;if(!a)return;const e=ent(cur.cid,cur.y,cur.m);
+function addPay(){const a=+pA.value;if(!a||a<0)return window.alert('Importo non valido');
+const e=ent(cur.cid,cur.y,cur.m),res=e.a-paid(e);
+if(a>res*2&&res>0&&!confirm('Stai inserendo '+fmt0(a)+' ma il residuo è '+fmt0(res)+'. Continuare?'))return;
 e.pays=(e.pays||[]).concat({d:pD.value||TODAY,a});setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
 function delPay(i){const e=ent(cur.cid,cur.y,cur.m);e.pays.splice(i,1);setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
 function clearPays(){const e=ent(cur.cid,cur.y,cur.m);e.pays=[];setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
-function mLive(){if(!cur)return;const e=ent(cur.cid,cur.y,cur.m);e.a=+mA.value||0;e.note=mNote.value;
+function mLive(){if(!cur)return;const e=ent(cur.cid,cur.y,cur.m);e.a=Math.max(0,+mA.value||0);e.note=mNote.value;
 setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
 function openClient(id){editId=id;const c=id?client(id):null;cTitle.textContent=c?'Modifica '+c.name:'Nuovo cliente';
 cName.value=c?c.name:'';cEmoji.value=c?c.emoji:'💼';cDef.value=c?c.def:100;cSy.value=c?c.sy:today.getFullYear();

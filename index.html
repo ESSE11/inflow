@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-title" content="Inflow"><meta name="theme-color" content="#0b0f14">
 <title>Inflow</title>
 <link rel="manifest" href="manifest.json">
-<style>:root{--bg:#0b0f14;--card:#151b23;--txt:#e8eef4;--mut:#8fa1b3;--g:#2ecc71;--o:#f39c12;--r:#e74c3c;--b:#3aa0ff}
+<style>:root{--bg:#0b0f14;--card:#151b23;--txt:#e8eef4;--mut:#9ab0c8;--g:#2ecc71;--o:#f39c12;--r:#e74c3c;--b:#3aa0ff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,sans-serif;padding:calc(12px + env(safe-area-inset-top)) 12px calc(50px + env(safe-area-inset-bottom));-webkit-user-select:none;user-select:none}
 input,textarea{-webkit-user-select:text;user-select:text}
@@ -64,29 +64,71 @@ label{font-size:12px;color:var(--mut)}
 .acc .aa{margin-left:auto;display:flex;gap:4px}
 .acc button{background:#2a3644;color:var(--txt);padding:6px 9px;font-size:13px}
 .warn{font-size:11px;color:var(--o);background:#2b2113;border-radius:10px;padding:8px 10px;margin:8px 0;line-height:1.4}
-.sync{font-size:11px;color:var(--mut);margin:4px 0 8px}</style></head>
+.sync{font-size:11px;color:var(--mut);margin:4px 0 8px}
+
+/* Toast system */
+#toast-host{position:fixed;left:50%;bottom:calc(70px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;background:var(--card);border:1px solid #2a3644;border-radius:12px;padding:12px 16px;max-width:90vw;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:toast-in .2s ease-out;display:flex;align-items:center;gap:10px}
+.toast.success{border-color:var(--g)}
+.toast.error{border-color:var(--r)}
+.toast.warning{border-color:var(--o)}
+.toast.info{border-color:var(--b)}
+.toast .icon{font-size:16px;flex:0 0 auto}
+.toast .msg{flex:1;font-size:14px;line-height:1.4}
+.toast .close{background:none;border:none;color:var(--mut);font-size:18px;line-height:1;padding:0 0 0 8px;cursor:pointer}
+@keyframes toast-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast-out{to{opacity:0;transform:translateY(-10px)}}
+.toast.hiding{animation:toast-out .2s ease-in forwards}
+
+/* Custom confirm modal */
+#confirm-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1001;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+#confirm-modal.on{opacity:1;visibility:visible}
+#confirm-modal .box{background:var(--card);border:1px solid #2a3644;border-radius:16px;padding:20px;max-width:90vw;width:320px;transform:scale(.95);transition:transform .2s}
+#confirm-modal.on .box{transform:scale(1)}
+#confirm-modal h3{margin:0 0 8px;font-size:16px}
+#confirm-modal p{margin:0 0 20px;color:var(--mut);font-size:14px;line-height:1.5}
+#confirm-modal .btns{display:flex;gap:8px;justify-content:flex-end}
+#confirm-modal button{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none}
+#confirm-modal .btn-cancel{background:#2a3644;color:var(--txt)}
+#confirm-modal .btn-ok{background:var(--r);color:white}
+#confirm-modal .btn-ok.primary{background:var(--b)}
+
+/* Focus visible for accessibility */
+*:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+
+/* Better number input styling */
+input[type="number"]{appearance:textfield}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{appearance:none;margin:0}
+input[type="number"]{moz-appearance:textfield}
+
+/* Numeric keypad hint */
+.num-hint{font-size:11px;color:var(--mut);margin-top:4px}
+</style></head>
 <body>
-<header>💰 <b>Inflow</b><button class="ib" id="vb" onclick="cycleMode()">☰ Lista</button><button class="ib" onclick="show(bSheet)">📋</button></header>
+<div id="toast-host"></div>
+<div id="confirm-modal"><div class="box"><h3 id="confirm-title"></h3><p id="confirm-msg"></p><div class="btns"><button class="btn-cancel" onclick="closeConfirm(false)">Annulla</button><button class="btn-ok" id="confirm-ok" onclick="closeConfirm(true)">Conferma</button></div></div></div>
+<header>💰 <b>Inflow</b><button class="ib" id="vb" onclick="cycleMode()" aria-label="Cambia vista">☰ Lista</button><button class="ib" onclick="show(bSheet)" aria-label="Backup e sincronizzazione">📋</button></header>
 <div id="bar"></div>
 <div class="chips" id="chips"></div><div class="chips f" id="fchips"></div><div class="tot" id="tot"></div><div id="list"></div>
 
-<div class="sheet" id="mSheet"><button class="x" onclick="hide(mSheet)">✕</button>
+<div class="sheet" id="mSheet"><button class="x" onclick="hide(mSheet)" aria-label="Chiudi">✕</button>
 <h2 id="mTitle" style="margin:0;font-size:17px"></h2>
-<div class="row">Dovuto: <input type="number" id="mA" step="0.01" oninput="mLive()"> €</div>
+<div class="row">Dovuto: <input type="number" id="mA" step="0.01" inputmode="decimal" oninput="mLive()"> €</div>
 <div class="resid" id="mRes"></div>
 <label>Acconti incassati</label><div id="mPays"></div>
-<div class="row"><input type="date" id="pD" style="flex:1"><input type="number" id="pA" step="0.01" placeholder="€"><button class="bg" style="flex:0 0 auto;padding:10px 14px" onclick="addPay()">＋</button></div>
+<div class="row"><input type="date" id="pD" style="flex:1"><input type="number" id="pA" step="0.01" inputmode="decimal" placeholder="€"><div class="num-hint">Tastiera numerica per importo</div><button class="bg" style="flex:0 0 auto;padding:10px 14px" onclick="addPay()">＋</button></div>
 <div class="row"><button class="bg" onclick="payFull(cur.cid,cur.y,cur.m);openMonth(cur.cid,cur.y,cur.m)">✅ Salda tutto</button><button class="bn" onclick="clearPays()">↩ Azzera</button></div>
 <label>📝 Nota del mese</label><textarea id="mNote" oninput="mLive()" placeholder="es. bonifico ricevuto, saldo trimestrale..."></textarea></div>
 
-<div class="sheet" id="cSheet"><button class="x" onclick="hide(cSheet)">✕</button>
+<div class="sheet" id="cSheet"><button class="x" onclick="hide(cSheet)" aria-label="Chiudi">✕</button>
 <h2 id="cTitle" style="margin:0;font-size:17px">Cliente</h2>
 <div class="row">Nome <input id="cName" style="flex:1" placeholder="es. ROSSI SRL"></div>
-<div class="row">Emoji <input id="cEmoji" style="width:70px" value="💼"> Importo/mese <input type="number" id="cDef" step="0.01" value="100"> €</div>
-<div class="row">Inizio: <select id="cSm"></select> <input type="number" id="cSy" value="2026" style="width:90px"></div>
+<div class="row">Emoji <input id="cEmoji" style="width:70px" value="💼"> Importo/mese <input type="number" id="cDef" step="0.01" inputmode="decimal" value="100"> €</div>
+<div class="row">Inizio: <select id="cSm"></select> <input type="number" id="cSy" inputmode="decimal" value="2026" style="width:90px"></div>
 <div class="row"><button class="bg" onclick="cSave()">💾 Salva</button><button class="bd" id="cDel" onclick="cDelete()">🗑 Elimina</button></div></div>
 
-<div class="sheet" id="bSheet"><button class="x" onclick="hide(bSheet)">✕</button>
+<div class="sheet" id="bSheet"><button class="x" onclick="hide(bSheet)" aria-label="Chiudi">✕</button>
 <h2 style="margin:0;font-size:17px">💾 Database & Backup</h2>
 <div id="checkOut"></div>
 <div class="row"><button class="bn" onclick="show(bSheet);checkData(true)">🔍 Verifica conti</button></div>
@@ -108,10 +150,62 @@ let cfg=(()=>{try{return JSON.parse(localStorage.getItem(CFG))||{accs:[],act:0,a
 function sCfg(){try{localStorage.setItem(CFG,JSON.stringify(cfg))}catch(e){}}
 const LS='pagDBv2',MN=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const today=new Date(),TN=today.getFullYear()*100+today.getMonth()+1;
-const MODES=[['☰ Lista','list'],['▦ Griglia','grid'],['◱ Trimestri','quar']];
+const MODES=[['☰ Lista','list'],['▦ Griglia','grid'],['◱ Trimestri','quar'],['📊 Foglio','sheet']];
 const FILT=[['Tutti','all'],['⚠️ Scaduti','sca'],['◐ Parziali','par'],['✅ Pagati','pag']];
 let mode=0,filt='all',cur=null,view='all',editId=null;
 let DB=(()=>{try{return JSON.parse(localStorage.getItem(LS)||'null')}catch(e){return null}})();
+
+// Toast system
+let toastId=0;
+function toast(msg,type='info',duration=3000){
+  const host=document.getElementById('toast-host');
+  if(!host)return;
+  const id=++toastId;
+  const icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML='<span class="icon">'+icons[type]+'</span><span class="msg">'+msg+'</span><button class="close" onclick="dismissToast('+id+')">&times;</button>';
+  el.dataset.toastId=id;
+  host.appendChild(el);
+  if(duration>0)setTimeout(()=>dismissToast(id),duration);
+  return id;
+}
+function dismissToast(id){
+  const el=document.querySelector('#toast-host .toast[data-toast-id="'+id+'"]');
+  if(el){el.classList.add('hiding');setTimeout(()=>el.remove(),200)}
+}
+
+// Custom confirm modal
+let confirmResolve=null;
+function confirmModal(title,msg,okText='Conferma',okClass=''){
+  return new Promise(resolve=>{
+    confirmResolve=resolve;
+    document.getElementById('confirm-title').textContent=title;
+    document.getElementById('confirm-msg').textContent=msg;
+    const okBtn=document.getElementById('confirm-ok');
+    okBtn.textContent=okText;
+    okBtn.className='btn-ok '+(okClass||'');
+    document.getElementById('confirm-modal').classList.add('on');
+  });
+}
+function closeConfirm(result){
+  document.getElementById('confirm-modal').classList.remove('on');
+  if(confirmResolve){confirmResolve(result);confirmResolve=null}
+}
+
+// Helpers per sostituire alert/confirm nativi
+function alertInfo(msg){return toast(msg,'info')}
+function alertSuccess(msg){return toast(msg,'success')}
+function alertError(msg){return toast(msg,'error')}
+function alertWarning(msg){return toast(msg,'warning')}
+
+// Haptic feedback (vibrazione leggera su mobile)
+function haptic(type='light'){
+  if(navigator.vibrate){
+    const patterns={light:[5],medium:[10],heavy:[15,5,15],success:[10,50,10],error:[50,50,50]};
+    navigator.vibrate(patterns[type]||patterns.light);
+  }
+}
 function iso(d){return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)}
 const TODAY=iso(today);
 function seed(){const D={clients:[{id:'server',name:'SERVER',emoji:'🖥️',def:250,sy:2025,sm:6},{id:'grafiche',name:'GRAFICHE',emoji:'🎨',def:150,sy:2025,sm:7}],ent:{server:{},grafiche:{}}};
@@ -168,14 +262,33 @@ for(const c of DB.clients)h+='<button class="chip'+(view==c.id?' on':'')+'" oncl
 h+='<button class="chip add" onclick="openClient(null)">＋</button>';chips.innerHTML=h;
 fchips.innerHTML=FILT.map(f=>'<button class="chip'+(filt==f[1]?' on':'')+'" onclick="filt=\''+f[1]+'\';render()">'+f[0]+'</button>').join('');
 const ids=view=='all'?DB.clients.map(c=>c.id):[view],t=totals(ids),o=overdue(ids);
+// Counter animation (count-up)
+let lastTotals={out:0,inc:0,prog:0};
+function animateTotals(t){
+  const els=tot.querySelectorAll('b');
+  const vals={out:t.out,inc:t.inc,prog:t.prog};
+  const keys=['out','inc','prog'];
+  keys.forEach((k,i)=>{
+    const el=els[i];if(!el)return;
+    const start=lastTotals[k]||0;const end=vals[k];
+    if(start===end){el.textContent=fmt(end);return}
+    const dur=400;const st=performance.now();
+    function tick(now){const p=Math.min(1,(now-st)/dur);const eased=1-Math.pow(1-p,3);const val=start+(end-start)*eased;el.textContent=fmt(val);if(p<1)requestAnimationFrame(tick);else el.textContent=fmt(end)}
+    requestAnimationFrame(tick);
+  });
+  lastTotals={...vals};
+}
 const probs=checkData();
 bar.innerHTML=(probs.length?'<div class="alert" onclick="show(bSheet);checkData(true)"><div><b>'+probs.length+' anomalie nei conti</b><i>tocca per i dettagli</i></div><div class="go">Vedi →</div></div>':'')
 +(o.n?'<div class="alert" onclick="filt=\'sca\';render()"><div><b>'+o.n+' '+(o.n==1?'mese scaduto':'mesi scaduti')+' · '+fmt0(o.s)+'</b><i>il più vecchio da '+o.days+' giorni</i></div><div class="go">Vedi →</div></div>'
 :'<div class="alert ok"><div><b>Tutto incassato</b><i>nessuno scaduto ad oggi</i></div></div>');
-tot.innerHTML='<div><b>'+fmt(t.out)+'</b><span>SCADUTO DA INCASSARE</span></div><div><b>'+fmt(t.inc)+'</b><span>INCASSATO</span></div><div><b>'+fmt(t.prog)+'</b><span>PROGRAMMATO</span></div>';
+animateTotals(t);
 vb.textContent=MODES[mode][0];
 const M=MODES[mode][1],R=rows(ids);
-list.innerHTML=!R.length?'<div class="empty">Nessun mese con questo filtro</div>':M=='list'?renderList(R,ids):M=='quar'?renderQuar(R,ids):renderGrid(R,ids)}
+if(!DB.clients.length){
+  list.innerHTML='<div class="empty" style="padding:40px 20px"><div style="font-size:48px;margin-bottom:12px">📭</div><div style="font-size:16px;font-weight:600;margin-bottom:6px">Nessun cliente</div><div style="color:var(--mut);font-size:13px;margin-bottom:18px">Tocca <b>＋</b> in alto per aggiungere il primo</div><button class="bg" style="padding:14px 28px;font-size:16px" onclick="openClient(null)">＋ Aggiungi cliente</button></div>';
+}else{
+  list.innerHTML=!R.length?'<div class="empty">Nessun mese con questo filtro</div>':M=='list'?renderList(R,ids):M=='quar'?renderQuar(R,ids):M=='sheet'?renderSheet(R,ids):renderGrid(R,ids)}}
 const LBL={pag:'PAGATO',par:'PARZIALE',sca:'SCADUTO',fut:'DA PAGARE'};
 function hold(r){return ' onpointerdown="pStart(event,\''+r.cid+'\','+r.y+','+r.m+')" onpointerup="pEnd(event)" onpointercancel="pEnd(event)" onpointerleave="pEnd(event)" oncontextmenu="return false" onclick="pClick(\''+r.cid+'\','+r.y+','+r.m+')"'}
 function renderGrid(R,ids){let L='';
@@ -189,6 +302,25 @@ const lb=r.st=='pag'?(w?'✅ '+dmy(w):LBL.pag)+(np>1?' ×'+np:''):r.st=='par'?(w
 L+='<div class="m '+r.st+'"'+hold(r)+'>'+MN[r.m-1]+'<small>'+sm+(r.e.note?' 📝':'')+'</small><em>'+lb+'</em></div>'}
 if(open)L+='</div>'}
 return L}
+function renderSheet(R,ids){let L='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap">'+
+'<tr style="color:var(--mut);text-align:left"><th style="padding:6px 4px">Mese</th>'+(ids.length>1?'<th style="padding:6px 4px">Cliente</th>':'')+'<th style="padding:6px 4px">Dovuto</th><th style="padding:6px 4px">Incassato</th><th style="padding:6px 4px">Residuo</th><th style="padding:6px 4px">+Incassa</th></tr>';
+for(const r of R){const c=client(r.cid),res=r.e.a-r.paid;
+L+='<tr style="border-bottom:1px solid #1c2530"><td style="padding:6px 4px">'+MN[r.m-1]+' '+r.y+'</td>'+
+(ids.length>1?'<td style="padding:6px 4px">'+c.emoji+' '+c.name+'</td>':'')+
+'<td style="padding:4px"><input type="number" step="0.01" inputmode="decimal" value="'+r.e.a+'" style="width:80px;padding:6px" onchange="sheetSetA(\''+r.cid+'\','+r.y+','+r.m+',this)"></td>'+
+'<td class="inc" style="padding:6px 4px;color:var(--g)">'+fmt0(r.paid)+'</td>'+
+'<td class="res" style="padding:6px 4px;color:'+(res>0?'var(--r)':'var(--mut)')+'">'+fmt0(Math.max(0,res))+'</td>'+
+'<td style="padding:4px"><input type="number" step="0.01" inputmode="decimal" placeholder="€" style="width:80px;padding:6px" onkeydown="if(event.key==\'Enter\')sheetQuickPay(\''+r.cid+'\','+r.y+','+r.m+',this)"></td></tr>'}
+L+='</table></div>';return L}
+function sheetRefreshTotals(){const ids=view=='all'?DB.clients.map(c=>c.id):[view],t=totals(ids);
+tot.innerHTML='<div><b>'+fmt(t.out)+'</b><span>SCADUTO DA INCASSARE</span></div><div><b>'+fmt(t.inc)+'</b><span>INCASSATO</span></div><div><b>'+fmt(t.prog)+'</b><span>PROGRAMMATO</span></div>'}
+function sheetUpdateRow(cid,y,m,el){const e=ent(cid,y,m),p=paid(e),res=e.a-p,tr=el.closest('tr'),rc=tr.querySelector('.res');
+tr.querySelector('.inc').textContent=fmt0(p);rc.textContent=fmt0(Math.max(0,res));rc.style.color=res>0?'var(--r)':'var(--mut)'}
+function sheetSetA(cid,y,m,el){const e=ent(cid,y,m);e.a=Math.max(0,+el.value||0);setEnt(cid,y,m,e);sheetUpdateRow(cid,y,m,el);sheetRefreshTotals()}
+async function sheetQuickPay(cid,y,m,el){const a=+el.value;if(!a||a<0)return;
+const e=ent(cid,y,m),res=e.a-paid(e);
+if(a>res*2&&res>0&&!(await confirmModal('Importo elevato','Stai inserendo '+fmt0(a)+' ma il residuo è '+fmt0(res)+'. Continuare?')))return;
+e.pays=(e.pays||[]).concat({d:TODAY,a});setEnt(cid,y,m,e);el.value='';sheetUpdateRow(cid,y,m,el);sheetRefreshTotals()}
 function renderList(R,ids){let L='',cy=0;
 for(const r of R){const c=client(r.cid),when=lastPay(r.e);
 if(r.y!=cy){cy=r.y;L+='<div class="year">📅 '+cy+'</div>'}
@@ -226,15 +358,15 @@ function openMonth(cid,y,m){cur={cid,y,m};const e=ent(cid,y,m),c=client(cid);
 mTitle.textContent=c.emoji+' '+c.name+' – '+MN[m-1]+' '+y;mA.value=e.a;mNote.value=e.note||'';
 drawPays();show(mSheet)}
 function drawPays(){const e=ent(cur.cid,cur.y,cur.m),p=paid(e),res=e.a-p;
-mPays.innerHTML=(e.pays||[]).length?e.pays.map((x,i)=>'<div class="pay"><b>'+fmt0(+x.a||0)+'</b><span>'+(x.d?dmy(x.d):'senza data')+'</span><button onclick="delPay('+i+')">🗑</button></div>').join(''):'<div class="resid">Nessun acconto registrato</div>';
+mPays.innerHTML=(e.pays||[]).length?e.pays.map((x,i)=>'<div class="pay"><b>'+fmt0(+x.a||0)+'</b><span>'+(x.d?dmy(x.d):'senza data')+'</span><button onclick="delPay('+i+')" aria-label="Elimina acconto">🗑</button></div>').join(''):'<div class="resid">Nessun acconto registrato</div>';
 mRes.innerHTML=res>0?'Incassato '+fmt0(p)+' · <b style="color:var(--r)">residuo '+fmt0(res)+'</b>':'<b style="color:var(--g)">Saldato'+(p>e.a?' (+'+fmt0(p-e.a)+')':'')+'</b>';
 pD.value=TODAY;pA.value=res>0?(+res.toFixed(2)):''}
-function addPay(){const a=+pA.value;if(!a||a<0)return window.alert('Importo non valido');
+async function addPay(){const a=+pA.value;if(!a||a<0)return alertError('Importo non valido');
 const e=ent(cur.cid,cur.y,cur.m),res=e.a-paid(e);
-if(a>res*2&&res>0&&!confirm('Stai inserendo '+fmt0(a)+' ma il residuo è '+fmt0(res)+'. Continuare?'))return;
-e.pays=(e.pays||[]).concat({d:pD.value||TODAY,a});setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
-function delPay(i){const e=ent(cur.cid,cur.y,cur.m);e.pays.splice(i,1);setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
-function clearPays(){const e=ent(cur.cid,cur.y,cur.m);e.pays=[];setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
+if(a>res*2&&res>0&&!(await confirmModal('Importo elevato','Stai inserendo '+fmt0(a)+' ma il residuo è '+fmt0(res)+'. Continuare?')))return;
+e.pays=(e.pays||[]).concat({d:pD.value||TODAY,a});setEnt(cur.cid,cur.y,cur.m,e);drawPays();render();haptic('success')}
+function delPay(i){haptic('medium');const e=ent(cur.cid,cur.y,cur.m);e.pays.splice(i,1);setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
+function clearPays(){haptic('medium');const e=ent(cur.cid,cur.y,cur.m);e.pays=[];setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
 function mLive(){if(!cur)return;const e=ent(cur.cid,cur.y,cur.m);e.a=Math.max(0,+mA.value||0);e.note=mNote.value;
 setEnt(cur.cid,cur.y,cur.m,e);drawPays();render()}
 function openClient(id){editId=id;const c=id?client(id):null;cTitle.textContent=c?'Modifica '+c.name:'Nuovo cliente';
@@ -246,40 +378,44 @@ function cSave(){const name=cName.value.trim()||'Cliente';
 if(editId){const c=client(editId);c.name=name;c.emoji=cEmoji.value||'💼';c.def=+cDef.value||0;c.sy=+cSy.value;c.sm=+cSm.value}
 else{const id='c'+Date.now();DB.clients.push({id,name,emoji:cEmoji.value||'💼',def:+cDef.value||0,sy:+cSy.value,sm:+cSm.value});DB.ent[id]={};view=id}
 save();hide(cSheet);render()}
-function cDelete(){if(!confirm('Elimino cliente e tutti i suoi dati?'))return;
+async function cDelete(){if(!(await confirmModal('Eliminare cliente','Elimino cliente e tutti i suoi dati?','Eliminare','')))return;haptic('heavy');
 DB.clients=DB.clients.filter(c=>c.id!=editId);delete DB.ent[editId];view='all';save();hide(cSheet);render()}
 function cycleMode(){mode=(mode+1)%MODES.length;try{localStorage.setItem(LS+'m2',MODES[mode][1])}catch(e){}render()}
 // ---- backup GitHub (gist privati, multi-account)
 function acc(){return cfg.accs[cfg.act]}
 function drawAccs(){
-accs.innerHTML=cfg.accs.length?cfg.accs.map((a,i)=>'<div class="acc'+(i==cfg.act?' on':'')+'"><div><b>'+a.name+'</b><span>'+(a.gist?'gist '+a.gist.slice(0,8):'nessun backup ancora')+'</span></div><div class="aa">'+(i==cfg.act?'':'<button onclick="useAcc('+i+')">Usa</button>')+'<button onclick="delAcc('+i+')">🗑</button></div></div>').join(''):'<div class="resid">Nessun account collegato</div>';
+accs.innerHTML=cfg.accs.length?cfg.accs.map((a,i)=>'<div class="acc'+(i==cfg.act?' on':'')+'"><div><b>'+a.name+'</b><span>'+(a.gist?'gist '+a.gist.slice(0,8):'nessun backup ancora')+'</span></div><div class="aa">'+(i==cfg.act?'':'<button onclick="useAcc('+i+')">Usa</button>')+'<button onclick="delAcc('+i+')" aria-label="Scollega account">🗑</button></div></div>').join(''):'<div class="resid">Nessun account collegato</div>';
 autoS.checked=!!cfg.auto;
 syncSt.textContent=cfg.last?'Ultimo backup: '+new Date(cfg.last).toLocaleString('it-IT'):'Mai eseguito';}
 function addAcc(){const name=aName.value.trim(),token=aTok.value.trim();
-if(!name||!token)return window.alert('Servono nome e token');
+if(!name||!token)return alertError('Servono nome e token');
 cfg.accs.push({name,token,gist:''});cfg.act=cfg.accs.length-1;sCfg();aName.value=aTok.value='';drawAccs()}
 function useAcc(i){cfg.act=i;sCfg();drawAccs()}
-function delAcc(i){if(!confirm('Scollego '+cfg.accs[i].name+'? Il gist su GitHub resta, va cancellato da lì.'))return;
+async function delAcc(i){if(!(await confirmModal('Scollegare account','Scollego '+cfg.accs[i].name+'? Il gist su GitHub resta, va cancellato da lì.')))return;haptic('medium');
 cfg.accs.splice(i,1);if(cfg.act>=cfg.accs.length)cfg.act=Math.max(0,cfg.accs.length-1);sCfg();drawAccs()}
 function setAuto(){cfg.auto=autoS.checked;sCfg()}
 function gh(url,opt){const a=acc();return fetch('https://api.github.com'+url,Object.assign({headers:{Authorization:'Bearer '+a.token,Accept:'application/vnd.github+json'}},opt||{}))
 .then(r=>r.ok?r.json():r.json().then(j=>{throw new Error(r.status+' '+(j.message||''))}))}
-function push(sil){const a=acc();if(!a)return sil||window.alert('Collega prima un account');
+async function push(sil){const a=acc();if(!a)return sil||alertError('Collega prima un account');
 const body=JSON.stringify({description:'Inflow backup',public:false,files:{'inflow.json':{content:JSON.stringify(DB,null,1)}}});
-const req=a.gist?gh('/gists/'+a.gist,{method:'PATCH',body}):gh('/gists',{method:'POST',body:JSON.stringify({description:'Inflow backup',public:false,files:{'inflow.json':{content:JSON.stringify(DB,null,1)}}})});
-return req.then(j=>{a.gist=j.id;cfg.last=Date.now();sCfg();drawAccs();if(!sil)window.alert('Salvato su GitHub ✅')})
-.catch(e=>{if(!sil)window.alert('Errore GitHub: '+e.message+'\n\nControlla il token (permesso Gists: read and write) o la connessione.')})}
-function pull(){const a=acc();if(!a)return window.alert('Collega prima un account');
-if(!a.gist)return window.alert('Questo account non ha ancora un backup');
-if(!confirm('Sostituisco i dati locali con quelli su GitHub?'))return;
-gh('/gists/'+a.gist).then(j=>{const c=j.files['inflow.json'].content,d=JSON.parse(c);
-if(!d.clients||!d.ent)throw new Error('file non valido');DB=migrate(d);save();render();drawAccs();window.alert('Ripristinato da GitHub ✅')})
-.catch(e=>window.alert('Errore GitHub: '+e.message))}
+try{
+  const j=a.gist?await gh('/gists/'+a.gist,{method:'PATCH',body}):await gh('/gists',{method:'POST',body});
+  a.gist=j.id;cfg.last=Date.now();sCfg();drawAccs();if(!sil)alertSuccess('Salvato su GitHub ✅')
+}catch(e){if(!sil)alertError('Errore GitHub: '+e.message+'\n\nControlla il token (permesso Gists: read and write) o la connessione.')}}
+async function pull(){const a=acc();if(!a)return alertError('Collega prima un account');
+if(!a.gist)return alertError('Questo account non ha ancora un backup');
+if(!(await confirmModal('Ripristinare da GitHub','Sostituisco i dati locali con quelli su GitHub?')))return;
+try{
+  const j=await gh('/gists/'+a.gist);
+  const c=j.files['inflow.json'].content,d=JSON.parse(c);
+  if(!d.clients||!d.ent)throw new Error('file non valido');
+  DB=migrate(d);save();render();drawAccs();alertSuccess('Ripristinato da GitHub ✅')
+}catch(e){alertError('Errore GitHub: '+e.message)}}
 let aT=null;
 function autoPush(){if(!cfg.auto||!acc())return;clearTimeout(aT);aT=setTimeout(()=>push(true),3000)}
-function copyB(){navigator.clipboard.writeText(JSON.stringify(DB));window.alert('Backup copiato ✅')}
+function copyB(){navigator.clipboard.writeText(JSON.stringify(DB));alertSuccess('Backup copiato ✅')}
 function dl(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(DB)],{type:'application/json'}));a.download='backup-inflow.json';a.click()}
-function imp(){try{const d=JSON.parse(bIn.value);if(!d.clients||!d.ent)throw 0;DB=migrate(d);save();hide(bSheet);render();window.alert('Ripristinato ✅')}catch(e){window.alert('Backup non valido ❌')}}
+function imp(){try{const d=JSON.parse(bIn.value);if(!d.clients||!d.ent)throw 0;DB=migrate(d);save();hide(bSheet);render();alertSuccess('Ripristinato ✅')}catch(e){alertError('Backup non valido ❌')}}
 try{const k=MODES.findIndex(m=>m[1]==localStorage.getItem(LS+'m2'));if(k>=0)mode=k}catch(e){}
 render();drawAccs();
 if('serviceWorker' in navigator&&location.protocol=='https:')navigator.serviceWorker.register('sw.js');</script></body></html>
